@@ -7,7 +7,7 @@ import Test.Hspec
 
 data Wire = Wire String deriving (Show, Ord, Eq)
 
-data Value = Value Word16 deriving (Show)
+data Value = Value Word16 deriving (Show, Eq)
 
 data Literal = WireL Wire | ValueL Value deriving (Show)
 
@@ -24,15 +24,21 @@ data Program = Program (M.Map Wire Expr) deriving Show
 mkProgram :: [(Wire, Expr)] -> Program
 mkProgram l = Program (M.fromList l)
 
-evalProgram :: Program -> Wire -> Value
+evalProgram :: Program -> Wire -> Maybe Value
 evalProgram program@(Program m) wire = case M.lookup wire m of
-  Nothing -> error "Wire pas dans program"
+  Nothing -> Nothing
   Just expr -> evalExpr program expr
 
-evalExpr :: Program -> Expr -> Value
+evalExpr :: Program -> Expr -> Maybe Value
 evalExpr program (LiteralE lit) = evalLiteral program lit
-evalExpr program (UnOpE op lit) = evalUnOp op (evalLiteral program lit)
-evalExpr program (BinOpE op lit lit') = evalBinOp op (evalLiteral program lit) (evalLiteral program lit')
+evalExpr program (UnOpE op lit) = do
+  v <- evalLiteral program lit
+  Just (evalUnOp op v)
+
+evalExpr program (BinOpE op lit lit') = do
+  v <- evalLiteral program lit
+  v' <- evalLiteral program lit'
+  Just (evalBinOp op v v')
 
 evalUnOp :: UnOp -> Value -> Value
 evalUnOp Not (Value v) = Value (complement v)
@@ -46,8 +52,8 @@ applyOp Or v v' = v .|. v'
 applyOp LShift v v' = shiftL v (fromIntegral v')
 applyOp RShift v v' = shiftR v (fromIntegral v')
 
-evalLiteral :: Program -> Literal -> Value
-evalLiteral _ (ValueL v) = v
+evalLiteral :: Program -> Literal -> Maybe Value
+evalLiteral _ (ValueL v) = Just v
 evalLiteral program (WireL wire) = evalProgram program wire
 
 {-
@@ -73,25 +79,25 @@ defaultProgram = mkProgram [
   (Wire "i", UnOpE Not (WireL (Wire "y")))
   ]
 
-eS :: String -> Word16
-eS s = let (Value res) = evalProgram defaultProgram (Wire s)
-       in res
+eS :: String -> Maybe Value
+eS s = evalProgram defaultProgram (Wire s)
 
 main :: IO ()
 main = hspec $ do
   describe "Test" $ do
     it "works" $ do
-      eS "d" `shouldBe` 72
-      eS "e" `shouldBe` 507
-      eS "f" `shouldBe` 492
-      eS "g" `shouldBe` 114
-      eS "h" `shouldBe` 65412
-      eS "i" `shouldBe` 65079
-      eS "x" `shouldBe` 123
-      eS "y" `shouldBe` 456
+      eS "d" `shouldBe` Just (Value 72)
+      eS "e" `shouldBe` Just (Value 507)
+      eS "f" `shouldBe` Just (Value 492)
+      eS "g" `shouldBe` Just (Value 114)
+      eS "h" `shouldBe` Just (Value 65412)
+      eS "i" `shouldBe` Just (Value 65079)
+      eS "x" `shouldBe` Just (Value 123)
+      eS "y" `shouldBe` Just (Value 456)
+      eS "titi" `shouldBe` Nothing
 
 -- Program
 -- Partie I (c'est fait) : evaluation
--- Partie II Robustess
+-- Partie II Robustess.
 -- Partie III Parsing
 -- Partie IV Vrai example
