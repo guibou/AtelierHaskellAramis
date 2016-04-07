@@ -4,22 +4,23 @@ import Data.Word (Word16)
 import qualified Data.Map as M
 import Data.Bits
 import Test.Hspec
+import qualified Text.Parsec as P
 
 data Wire = Wire String deriving (Show, Ord, Eq)
 
 data Value = Value Word16 deriving (Show, Eq)
 
-data Literal = WireL Wire | ValueL Value deriving (Show)
+data Literal = WireL Wire | ValueL Value deriving (Show, Eq)
 
-data BinOp = And | Or | LShift | RShift deriving (Show)
-data UnOp = Not deriving (Show)
+data BinOp = And | Or | LShift | RShift deriving (Show, Eq)
+data UnOp = Not deriving (Show, Eq)
 
 data Expr = LiteralE Literal
           | BinOpE BinOp Literal Literal
           | UnOpE UnOp Literal
-            deriving (Show)
+            deriving (Show, Eq)
 
-data Program = Program (M.Map Wire Expr) deriving Show
+data Program = Program (M.Map Wire Expr) deriving (Show, Eq)
 
 mkProgram :: [(Wire, Expr)] -> Program
 mkProgram l = Program (M.fromList l)
@@ -67,6 +68,9 @@ NOT x -> h
 NOT y -> i
 -}
 
+exampleString :: String
+exampleString = "123 -> x\n456 -> y\nx AND y -> d\nx OR y -> e\nx LSHIFT 2 -> f\ny RSHIFT 2 -> g\nNOT x -> h\nNOT y -> i"
+
 defaultProgram :: Program
 defaultProgram = mkProgram [
   (Wire "x", LiteralE (ValueL (Value 123))),
@@ -96,8 +100,103 @@ main = hspec $ do
       eS "y" `shouldBe` Just (Value 456)
       eS "titi" `shouldBe` Nothing
 
+  describe "Parsing" $ do
+    it "works" $ do
+      parseProgram exampleString `shouldBe` (Just defaultProgram)
+
 -- Program
 -- Partie I (c'est fait) : evaluation
 -- Partie II Robustess.
 -- Partie III Parsing
 -- Partie IV Vrai example
+
+-- Parsing
+
+parseProgram :: String -> Maybe Program
+parseProgram s = case P.parse programParser "TOTO" s of
+  Left _ -> Nothing
+  Right p -> Just p
+
+type Parser t = P.Parsec String () t
+
+parseInstructions :: Parser [(Wire, Expr)]
+parseInstructions = parseInstruction `P.sepBy` (P.string "\n")
+
+parseInstruction :: Parser (Wire, Expr)
+parseInstruction = do
+  expr <- parseExpr
+  _ <- P.string " -> "
+  wire <- parseWire
+
+  return $ (wire, expr)
+
+parseExpr :: Parser Expr
+parseExpr = P.choice [P.try parseBinOpE, P.try parseUnOpE, P.try parseLiteralE]
+
+parseLiteralE :: Parser Expr
+parseLiteralE = do
+  lit <- parseLiteral
+  return $ LiteralE lit
+
+parseLiteral :: Parser Literal
+parseLiteral = P.choice [P.try parseWireL, P.try parseValueL]
+
+parseWireL :: Parser Literal
+parseWireL = do
+  wire <- parseWire
+  return (WireL wire)
+
+parseValueL :: Parser Literal
+parseValueL = ValueL <$> parseValue
+
+parseValue :: Parser Value
+parseValue = do
+  v <- P.many1 (P.oneOf ['0'..'9'])
+  return $ Value (read v)
+
+parseNot :: Parser UnOp
+parseNot = P.string "NOT" *> return Not
+
+parseAnd, parseOr, parseRShift, parseLShift :: Parser BinOp
+
+parseAnd = P.string "AND" *> return And
+parseOr = P.string "OR" *> return Or
+parseLShift = P.string "LSHIFT" *> return LShift
+parseRShift = P.string "RSHIFT" *> return RShift
+
+parseBinOp :: Parser BinOp
+parseBinOp = P.choice [P.try parseAnd, P.try parseOr, P.try parseLShift, P.try parseRShift]
+
+parseUnOp :: Parser UnOp
+parseUnOp = P.choice [P.try parseNot]
+
+parseBinOpE :: Parser Expr
+parseBinOpE = do
+  lit <- parseLiteral
+  _ <- P.string " "
+  op <- parseBinOp
+  _ <- P.string " "
+  lit' <- parseLiteral
+  return $ BinOpE op lit lit'
+
+parseUnOpE :: Parser Expr
+parseUnOpE = do
+  op <- parseUnOp
+  _ <- P.string " "
+  lit <- parseLiteral
+  return $ UnOpE op lit
+
+parseWire :: Parser Wire
+parseWire = do
+  s <- P.many1 (P.oneOf ['a'..'z'])
+  return $ Wire s
+
+programParser :: Parser Program
+programParser = do
+  instr <- parseInstructions
+  return $ mkProgram instr
+
+{-
+z AND a -> y
+NOT a -> z
+-}
