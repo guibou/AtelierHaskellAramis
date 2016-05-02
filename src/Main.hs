@@ -21,24 +21,32 @@ data Expr = LiteralE Literal
             deriving (Show, Eq)
 
 data Program = Program (M.Map Wire Expr) deriving (Show, Eq)
+data Solution = Solution (M.Map Wire (Maybe Value)) deriving (Show, Eq)
+
+join' :: Maybe (Maybe a) -> Maybe a
+join' Nothing = Nothing
+join' (Just v) = v
+
 
 mkProgram :: [(Wire, Expr)] -> Program
 mkProgram l = Program (M.fromList l)
 
 evalProgram :: Program -> Wire -> Maybe Value
-evalProgram program@(Program m) wire = case M.lookup wire m of
-  Nothing -> Nothing
-  Just expr -> evalExpr program expr
+evalProgram (Program m) wire = let
+  solution = Solution (M.map (evalExpr solution) m)
+  res = case M.lookup wire m of
+    Nothing -> Nothing
+    Just expr -> evalExpr solution expr
+  in res
 
-evalExpr :: Program -> Expr -> Maybe Value
-evalExpr program (LiteralE lit) = evalLiteral program lit
-evalExpr program (UnOpE op lit) = do
-  v <- evalLiteral program lit
+evalExpr :: Solution -> Expr -> Maybe Value
+evalExpr solution (LiteralE lit) = evalLiteral solution lit
+evalExpr solution (UnOpE op lit) = do
+  v <- evalLiteral solution lit
   Just (evalUnOp op v)
-
-evalExpr program (BinOpE op lit lit') = do
-  v <- evalLiteral program lit
-  v' <- evalLiteral program lit'
+evalExpr solution (BinOpE op lit lit') = do
+  v <- evalLiteral solution lit
+  v' <- evalLiteral solution lit'
   Just (evalBinOp op v v')
 
 evalUnOp :: UnOp -> Value -> Value
@@ -53,9 +61,9 @@ applyOp Or v v' = v .|. v'
 applyOp LShift v v' = shiftL v (fromIntegral v')
 applyOp RShift v v' = shiftR v (fromIntegral v')
 
-evalLiteral :: Program -> Literal -> Maybe Value
+evalLiteral :: Solution -> Literal -> Maybe Value
 evalLiteral _ (ValueL v) = Just v
-evalLiteral program (WireL wire) = evalProgram program wire
+evalLiteral (Solution solution) (WireL wire) = join' (M.lookup wire solution)
 
 {-
 123 -> x
@@ -99,6 +107,9 @@ main = hspec $ do
       eS "x" `shouldBe` Just (Value 123)
       eS "y" `shouldBe` Just (Value 456)
       eS "titi" `shouldBe` Nothing
+
+      day7 `shouldReturn` Right (Just (Value 956))
+      day7bis `shouldReturn` Right (Just (Value 40149))
 
   describe "Parsing" $ do
     it "works" $ do
@@ -200,3 +211,21 @@ programParser = do
 z AND a -> y
 NOT a -> z
 -}
+
+
+day7 = do
+  content <- readFile "input"
+  case parseProgram content of
+    Nothing -> return (Left "Unable to parse")
+    Just p -> return (Right $ evalProgram p (Wire "a"))
+
+day7bis = do
+  content <- readFile "input"
+  case parseProgram content of
+    Nothing -> return (Left "Unable to parse")
+    Just p -> case evalProgram p (Wire "a") of
+      Just wireb -> let (Program m) = p
+                        f _ = LiteralE (ValueL wireb)
+                        p' = Program (M.adjust f (Wire "b") m)
+                    in return (Right $ evalProgram p' (Wire "a"))
+      Nothing -> return (Right Nothing)
