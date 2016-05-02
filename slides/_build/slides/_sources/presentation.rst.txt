@@ -1,0 +1,15 @@
+
+.. Haskell slides file, created by
+   hieroglyph-quickstart on Fri Mar  4 17:03:45 2016.
+
+
+Haskell
+=======
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+
+

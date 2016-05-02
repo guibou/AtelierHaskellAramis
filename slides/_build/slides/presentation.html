@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Comment Haskell a changé ma vision de développeur sur de nombreux points et notamment le typage &mdash; Haskell</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/styles.css" type="text/css" />
+    <link rel="stylesheet" href="_static/single.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    
+    
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2016.03.04',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="_static/common.js"></script>
+    
+    <script type="text/javascript" src="_static/slides.js"></script>
+    <script type="text/javascript" src="_static/sync.js"></script>
+    <script type="text/javascript" src="_static/controller.js"></script>
+    <script type="text/javascript" src="_static/init.js"></script>
+    
+    
+    <link rel="top" title="Haskell" href="index.html" /> 
+  </head>
+  <body>
+
+<section
+   id="slide_container"
+   class='slides layout-regular'>
+
+
+  
+<article class="slide level-1" id="comment-haskell-a-change-ma-vision-de-developpeur-sur-de-nombreux-points-et-notamment-le-typage">
+
+<h1>Comment Haskell a changé ma vision de développeur sur de nombreux points et notamment le typage</h1>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">auteur:</th><td class="field-body">Guillaume Bouchard</td>
+</tr>
+<tr class="field-even field"><th class="field-name">date:</th><td class="field-body">15 mars 2016</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Bonjour. Présentation</li>
+<li>Dans cette session je vais presenter Haskell</li>
+<li>En me basant sur des exemples de developement dirigé par les types</li>
+<li>J'espere pouvoir montrer que le typage est un outil puissant de conception, et particulièrement dans un langage comme Haskell</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="tete-la-premiere-et-logique">
+
+<h2>Tête la première : ET logique</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">binaryAnd</span> <span class="kt">False</span> <span class="kr">_</span> <span class="ow">=</span> <span class="kt">False</span>
+<span class="nf">binaryAnd</span> <span class="kt">True</span> <span class="n">x</span> <span class="ow">=</span> <span class="n">x</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">binaryAnd</span> <span class="kt">True</span> <span class="kt">False</span>
+<span class="go">False</span>
+<span class="gp">Prelude&gt;</span> <span class="n">binaryAnd</span> <span class="kt">True</span> <span class="kt">True</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Observer la syntaxe où je liste les cas</li>
+<li>Ceux-ci sont executés de haut en bas jusqu'à trouver celui qui marche</li>
+<li><cite>_</cite> est un joker.</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="tete-la-premiere-et-sur-une-liste">
+
+<h2>Tête la première : ET sur une liste</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">binaryAnd</span> <span class="kt">False</span> <span class="kr">_</span> <span class="ow">=</span> <span class="kt">False</span>
+<span class="nf">binaryAnd</span> <span class="kt">True</span> <span class="n">x</span> <span class="ow">=</span> <span class="n">x</span>
+
+<span class="nf">binaryAnds</span> <span class="kt">[]</span> <span class="ow">=</span> <span class="kt">True</span>
+<span class="nf">binaryAnds</span> <span class="p">(</span><span class="n">x</span><span class="kt">:</span><span class="n">xs</span><span class="p">)</span> <span class="ow">=</span> <span class="n">binaryAnd</span> <span class="n">x</span> <span class="p">(</span><span class="n">binaryAnds</span> <span class="n">xs</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">binaryAnds</span> <span class="kt">[]</span>
+<span class="go">True</span>
+<span class="gp">Prelude&gt;</span> <span class="n">binaryAnds</span> <span class="p">[</span><span class="kt">True</span><span class="p">,</span> <span class="kt">False</span><span class="p">,</span> <span class="kt">True</span><span class="p">]</span>
+<span class="go">False</span>
+<span class="gp">Prelude&gt;</span> <span class="n">binaryAnds</span> <span class="p">[</span><span class="kt">True</span><span class="p">,</span> <span class="kt">True</span><span class="p">,</span> <span class="kt">True</span><span class="p">]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Ceci est une évaluation dans le shell interactif <cite>GHCI</cite>.</li>
+<li>Fonctionalité importante qui permet de tester / évaluer interactivement son code</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="tete-la-premiere-types-statiques">
+
+<h2>Tête la première : Types statiques</h2>
+
+<p>Types verifiés statiquements.</p>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">binaryAnd</span> <span class="s">&quot;Hello&quot;</span> <span class="kt">True</span>
+
+<span class="go">&lt;interactive&gt;:23:11:</span>
+<span class="go">    Couldn&#39;t match expected type ‘Bool’ with actual type ‘[Char]’</span>
+<span class="go">    In the first argument of ‘binaryAnd’, namely ‘&quot;Hello&quot;’</span>
+<span class="go">    In the expression: binaryAnd &quot;Hello&quot; True</span>
+<span class="go">    In an equation for ‘it’: it = binaryAnd &quot;Hello&quot; True</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">binaryAnd</span> <span class="mi">0</span> <span class="kt">True</span>
+
+<span class="go">&lt;interactive&gt;:24:11:</span>
+<span class="go">    No instance for (Num Bool) arising from the literal ‘0’</span>
+<span class="go">    In the first argument of ‘binaryAnd’, namely ‘0’</span>
+<span class="go">    In the expression: binaryAnd 0 True</span>
+<span class="go">    In an equation for ‘it’: it = binaryAnd 0 True</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Bien que je vous montre un cas dans le shell interactif, il s'agit bien de verification à la compilation.</li>
+<li>Haskell peut quand même être executé en tant que script.</li>
+<li>Le typage est statique et inferé à la compilation</li>
+<li>Le typage est strict, 0 est different de False</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="tete-la-premiere-types-inferes">
+
+<h2>Tête la première : Types inferés</h2>
+
+<p>Les types sont inferés par le compilateur.</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">binaryAnd</span> <span class="kt">False</span> <span class="kr">_</span> <span class="ow">=</span> <span class="kt">False</span>
+<span class="nf">binaryAnd</span> <span class="kt">True</span> <span class="n">x</span> <span class="ow">=</span> <span class="n">x</span>
+
+<span class="nf">binaryAnds</span> <span class="kt">[]</span> <span class="ow">=</span> <span class="kt">True</span>
+<span class="nf">binaryAnds</span> <span class="p">(</span><span class="n">x</span><span class="kt">:</span><span class="n">xs</span><span class="p">)</span> <span class="ow">=</span> <span class="n">binaryAnd</span> <span class="n">x</span> <span class="p">(</span><span class="n">binaryAnds</span> <span class="n">xs</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="kr">type</span> <span class="n">binaryAnd</span>
+<span class="go">binaryAnd :: Bool -&gt; Bool -&gt; Bool</span>
+
+<span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="kr">type</span> <span class="n">binaryAnds</span>
+<span class="go">binaryAnds :: [Bool] -&gt; Bool</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="plan-de-la-presentation">
+
+<h2>Plan de la présentation</h2>
+
+<ul class="simple">
+<li>Présentation rapide d'Haskell</li>
+<li>Haskell, syntaxe et types, avec exemples</li>
+<li>Modélisation par les types, débat</li>
+<li>Live coding d'un exemple complexe</li>
+</ul>
+<p>(À suivre : 4 slides de texte, le reste n'aura que du code ;)</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="haskell-points-cles">
+
+<h2>Haskell : Points clés</h2>
+
+<ul class="simple">
+<li>Syntaxe expressive, modulaire</li>
+<li>Rapide. Interprété ou compilé.</li>
+<li>Outils puissants (repl, package manager, test / couverture / performance...)</li>
+<li>Paresseux</li>
+<li>Système de type puissant et strict<ul>
+<li>Forte séparation entre calculs purs et effets de bords</li>
+<li>Pas de cast implicite, (<cite>0 /= [] /= False /= &quot;&quot;</cite>)</li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Personelement je le trouve très expressif et agréable à programmer avec une capacitié à réutiliser enormement de code.</li>
+<li>Excellente performances pour un langage managé. Sur de nombreux problèmes j'atteint les performances du C++, mais en moyenne je suis 2 fois plus lent.</li>
+<li>Outils, le repl que vous connaissez, mais aussi un package manager (stack) entre autre.</li>
+<li>Haskell est paresseux dans son évaluation. C'est une caractéristique rare qui merite d'être notée et qui change un peu la façon de raisonner.</li>
+<li>Enfin, et ce sera le topic de la présentation, son système de type est très puissant</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="avantages-du-typage-statique">
+
+<h2>Avantages du typage statique</h2>
+
+<ul class="simple">
+<li>Plus d'erreur vérifiées à la compilation</li>
+<li>Moins d'erreur à l'exécution</li>
+<li>Refactoring plus facile</li>
+<li>Outils (auto-completion, analyse statique)</li>
+<li>Performances ?</li>
+<li>Expressivité</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-2" id="inconvenients-du-typage-statique">
+
+<h2>Inconvénients du typage statique</h2>
+
+<ul class="simple">
+<li>Moins de souplesse ? (On peu quand même faire du typage dynamique en Haskell).</li>
+</ul>
+<p>Votre avis ?</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="syntaxe-types-primaires">
+
+<h2>Syntaxe : Types primaires</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">foo</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="c1">-- ou `Integer` pour précision infinie</span>
+<span class="nf">foo</span> <span class="ow">=</span> <span class="mi">5</span>
+
+<span class="nf">bar</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="c1">-- ou `Double`</span>
+<span class="nf">bar</span> <span class="ow">=</span> <span class="mf">3.2</span>
+
+<span class="nf">ham</span> <span class="ow">::</span> <span class="kt">Char</span>
+<span class="nf">ham</span> <span class="ow">=</span> <span class="sc">&#39;g&#39;</span>
+
+<span class="nf">egg</span> <span class="ow">::</span> <span class="p">[</span><span class="kt">Int</span><span class="p">]</span>
+<span class="nf">egg</span> <span class="ow">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+
+<span class="nf">spam</span> <span class="ow">::</span> <span class="kt">String</span> <span class="c1">-- ou `[Char]`</span>
+<span class="nf">spam</span> <span class="ow">=</span> <span class="s">&quot;Bonjour&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Annotations non obligatoires</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Les annotions de type ne sont pas obligatoires car Haskell infere le type tout seul.</p>
+<p class="last">Cas particulié de <cite>5</cite> qui peut autant être un <cite>Int</cite> qu'un <cite>Float</cite> en fonction du contexte. Mais il n'y a pas de cast implicite.</p>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="fonctions">
+
+<h2>Fonctions</h2>
+
+<p>Définition :</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">add2</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">add2</span> <span class="n">x</span> <span class="ow">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>Usage :</p>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">add2</span> <span class="mi">5</span>
+<span class="go">7</span>
+
+<span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="kr">type</span> <span class="n">lengthString</span>
+<span class="go">lengthString :: String -&gt; Int</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">lengthString</span> <span class="s">&quot;bonjour&quot;</span>
+<span class="go">7</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="polymorphisme">
+
+<h2>Polymorphisme</h2>
+
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="kr">type</span> <span class="n">replicate</span>
+<span class="go">replicate :: Int -&gt; a -&gt; [a]</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">replicate</span> <span class="mi">5</span> <span class="mi">0</span>
+<span class="go">[0,0,0,0,0]</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">replicate</span> <span class="mi">5</span> <span class="sc">&#39;g&#39;</span>
+<span class="go">&quot;ggggg&quot;</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">replicate</span> <span class="mi">5</span> <span class="s">&quot;Bonjour&quot;</span>
+<span class="go">[&quot;Bonjour&quot;,&quot;Bonjour&quot;,&quot;Bonjour&quot;,&quot;Bonjour&quot;,&quot;Bonjour&quot;]</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="exemple-de-fonctions">
+
+<h2>Exemple de fonctions</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">abs</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">abs</span> <span class="n">x</span>
+   <span class="o">|</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">=</span> <span class="o">-</span><span class="n">x</span>
+   <span class="o">|</span> <span class="n">otherwise</span> <span class="ow">=</span> <span class="n">x</span>
+
+<span class="nf">length</span> <span class="ow">::</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">length</span> <span class="kt">[]</span> <span class="ow">=</span> <span class="mi">0</span>
+<span class="nf">length</span> <span class="p">(</span><span class="n">x</span><span class="kt">:</span><span class="n">xs</span><span class="p">)</span> <span class="ow">=</span> <span class="p">(</span><span class="n">length</span> <span class="n">xs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="polymorphism-contraint">
+
+<h2>Polymorphism contraint</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">min</span> <span class="ow">::</span> <span class="kt">Ord</span> <span class="n">t</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="ow">-&gt;</span> <span class="n">t</span> <span class="ow">-&gt;</span> <span class="n">t</span>
+<span class="nf">min</span> <span class="n">a</span> <span class="n">b</span> <span class="ow">=</span> <span class="kr">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span>
+            <span class="kr">then</span> <span class="n">a</span>
+            <span class="kr">else</span> <span class="n">b</span>
+</pre></div>
+</div>
+<p>Il existe de nombreuses &quot;instances&quot; de <cite>Ord</cite> et vous pouvez créer les votres à partir de n'importe quel type, nouveau ou existant.</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="fonctions-avancees">
+
+<h2>Fonctions avancées</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">duplicate</span> <span class="ow">=</span> <span class="n">replicate</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">duplicate</span> <span class="s">&quot;Bonjour&quot;</span>
+<span class="go">[&quot;Bonjour&quot;,&quot;Bonjour&quot;]</span>
+<span class="gp">Prelude&gt;</span> <span class="n">duplicate</span> <span class="mi">5</span>
+<span class="go">[5,5]</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">map</span> <span class="n">length</span> <span class="p">[</span><span class="s">&quot;Bonjour&quot;</span><span class="p">,</span> <span class="s">&quot;Monde&quot;</span><span class="p">]</span>
+<span class="go">[7,5]</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">map</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">]</span>
+<span class="go">[2,4,6,8,10,12,14,16,18,20]</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="example-fonction-partielle">
+
+<h2>Example : Fonction partielle</h2>
+
+<p>Une fonction partielle peut ne pas être définie sur tout son domaine.</p>
+<p>Quel est le minimum d'une liste vide ?</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">minimum</span> <span class="kt">[]</span>
+</pre></div>
+</div>
+<p>Différentes Approches :</p>
+<ul class="simple">
+<li>Exception</li>
+<li>Valeur sentinelle arbitraire</li>
+<li>Valeur de retour par référence</li>
+<li>Type spécifique ?</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-2" id="fonction-partielle-valeur-sentinelle">
+
+<h2>Fonction partielle - Valeur sentinelle</h2>
+
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">float</span> <span class="nf">minimum</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">v</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+         <span class="k">return</span> <span class="o">-</span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;::</span><span class="n">infinity</span><span class="p">();</span>
+
+    <span class="kt">float</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ret</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">if</span><span class="p">(</span><span class="n">minimum</span><span class="p">(</span><span class="n">maList</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;BUG !&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="fonction-partielle-exception">
+
+<h2>Fonction partielle - Exception</h2>
+
+<p>Exception (Python) :</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span></span>&gt;&gt;&gt; min([1,2,3])
+1
+&gt;&gt;&gt; min([])
+Traceback (most recent call last):
+File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+ValueError: min() arg is an empty sequence
+</pre></div>
+</div>
+<p>Bug : cas non gérés, erreur à l'exécution</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="fonction-partielle-flag-de-reussite">
+
+<h2>Fonction partielle - <em>Flag</em> de réussite</h2>
+
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">minimum</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">v</span><span class="p">,</span> <span class="kt">float</span> <span class="o">&amp;</span><span class="n">ret</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ret</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Bugs :</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">float</span> <span class="n">res</span><span class="p">;</span>
+<span class="n">minimum</span><span class="p">(</span><span class="n">maListe</span><span class="p">,</span> <span class="n">res</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">res</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span> <span class="c1">// Non initialisé</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="solution-type-specifique">
+
+<h2>Solution : Type spécifique</h2>
+
+<ul class="simple">
+<li>Utilisation du type polymorphique <cite>Maybe t</cite>.</li>
+</ul>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">minimum</span> <span class="ow">::</span> <span class="p">[</span><span class="kt">Float</span><span class="p">]</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="kt">Float</span>
+<span class="nf">minimum</span> <span class="kt">[]</span> <span class="ow">=</span> <span class="kt">Nothing</span>
+<span class="nf">minimum</span> <span class="n">l</span> <span class="ow">=</span> <span class="kt">Just</span> <span class="p">(</span><span class="n">minimum&#39;</span> <span class="n">l</span><span class="p">)</span>
+   <span class="kr">where</span> <span class="n">minimum&#39;</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">=</span> <span class="n">x</span>
+         <span class="n">minimum&#39;</span> <span class="p">(</span><span class="n">x</span><span class="kt">:</span><span class="n">xs</span><span class="p">)</span> <span class="ow">=</span> <span class="n">min</span> <span class="n">x</span> <span class="p">(</span><span class="n">minimum&#39;</span> <span class="n">xs</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">minimum</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">Just (-3)</span>
+<span class="gp">Prelude&gt;</span> <span class="n">minimum</span> <span class="kt">[]</span>
+<span class="go">Nothing</span>
+
+<span class="gp">Prelude&gt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">minimum</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">&lt;interactive&gt;:11:7:</span>
+<span class="go">    Couldn&#39;t match expected type ‘Int’ with actual type ‘Maybe Integer’</span>
+<span class="go">    In the second argument of ‘(*)’, namely ‘(minimum [1 .. 5])’</span>
+<span class="go">    In the expression: (2 * (minimum [1 .. 5])) :: Int</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Le typage nous empêche d'utiliser la valeur sans vérifier.</p>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="maybe-t-usage">
+
+<h2><cite>Maybe t</cite> : usage</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">case</span> <span class="n">minimum</span> <span class="n">maListe</span> <span class="kr">of</span>
+    <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="mi">0</span>
+    <span class="kt">Just</span> <span class="n">v</span> <span class="ow">-&gt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">v</span>
+</pre></div>
+</div>
+<p>Solutions avancées :</p>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="kt">Nothing</span>
+<span class="go">Nothing</span>
+<span class="gp">Prelude&gt;</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="kt">Just</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">Just 20</span>
+</pre></div>
+</div>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">fmap</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="n">minimum</span> <span class="n">maListe</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><cite>fmap</cite> applique une fonction à l'intérieur d'un <cite>Functor</cite> et renvoie quelque chose de la même forme. Généralisation de <cite>map</cite>.</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="types-custom">
+
+<h2>Types custom</h2>
+
+<p>Example avec un type <cite>Shape</cite> :</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Shape</span> <span class="ow">=</span> <span class="kt">Rectangle</span> <span class="kt">Float</span> <span class="kt">Float</span> <span class="o">|</span> <span class="kt">Square</span> <span class="kt">Float</span>
+
+<span class="c1">-- Construction</span>
+<span class="nf">myShape</span> <span class="ow">=</span> <span class="kt">Rectangle</span> <span class="mi">5</span> <span class="mi">10</span>
+
+<span class="c1">-- Deconstruction / fonction</span>
+<span class="c1">-- optionel: area :: Shape -&gt; Float</span>
+<span class="nf">area</span> <span class="p">(</span><span class="kt">Rectangle</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span> <span class="ow">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+<span class="nf">area</span> <span class="p">(</span><span class="kt">Square</span> <span class="n">c</span><span class="p">)</span> <span class="ow">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span>
+</pre></div>
+</div>
+<p>&quot;Pattern matching&quot; obligatoire vérifié.</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="arbre-binaire">
+
+<h2>Arbre binaire</h2>
+
+<p>Arbre binaire simple.</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Tree</span> <span class="ow">=</span> <span class="kt">Node</span> <span class="kt">Float</span> <span class="kt">Tree</span> <span class="kt">Tree</span> <span class="o">|</span> <span class="kt">Leaf</span>
+
+<span class="nf">lenTree</span> <span class="ow">::</span> <span class="kt">Tree</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">lenTree</span> <span class="kt">Leaf</span> <span class="ow">=</span> <span class="mi">0</span>
+<span class="nf">lenTree</span> <span class="p">(</span><span class="kt">Node</span> <span class="kr">_</span> <span class="n">t</span> <span class="n">t&#39;</span><span class="p">)</span> <span class="ow">=</span> <span class="n">lenTree</span> <span class="n">t</span> <span class="o">+</span> <span class="n">lenTree</span> <span class="n">t&#39;</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">lenTree</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">5</span> <span class="kt">Leaf</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">2</span> <span class="kt">Leaf</span> <span class="kt">Leaf</span><span class="p">))</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Arbre non polymorphique</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="arbre-binaire-polymorphique">
+
+<h2>Arbre binaire polymorphique</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Tree</span> <span class="n">t</span> <span class="ow">=</span> <span class="kt">Node</span> <span class="n">t</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="o">|</span> <span class="kt">Leaf</span>
+
+<span class="nf">lenTree</span> <span class="ow">::</span> <span class="kt">Tree</span> <span class="n">t</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">lenTree</span> <span class="kt">Leaf</span> <span class="ow">=</span> <span class="mi">0</span>
+<span class="nf">lenTree</span> <span class="p">(</span><span class="kt">Node</span> <span class="kr">_</span> <span class="n">s</span> <span class="n">s&#39;</span><span class="p">)</span> <span class="ow">=</span> <span class="n">lenTree</span> <span class="n">s</span> <span class="o">+</span> <span class="n">lenTree</span> <span class="n">s&#39;</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">lenTree</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">5</span> <span class="kt">Leaf</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">2</span> <span class="kt">Leaf</span> <span class="kt">Leaf</span><span class="p">))</span>
+<span class="go">2</span>
+<span class="gp">Prelude&gt;</span> <span class="n">lenTree</span> <span class="p">(</span><span class="kt">Node</span> <span class="s">&quot;Hello&quot;</span> <span class="kt">Leaf</span> <span class="p">(</span><span class="kt">Node</span> <span class="s">&quot;World&quot;</span> <span class="kt">Leaf</span> <span class="kt">Leaf</span><span class="p">))</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="arbre-binaire-usages">
+
+<h2>Arbre binaire - usages ?</h2>
+
+<ul class="simple">
+<li>Longueur de l'arbre</li>
+<li>Serialisation</li>
+<li>Opérations sur tous les elements (min, max...)</li>
+<li>Opérations sur l'arbre (transformations)</li>
+<li>Affichage (pour débug ?)</li>
+</ul>
+<p>Imaginez le code nécessaire en C++ / Python ?</p>
+<p>Haskell propose un mécanisme générique d'ajout de comportement surchargeable.</p>
+
+
+
+
+</article>
+<article class="slide level-2" id="exemple-affichage-generique">
+
+<h2>Exemple : Affichage génerique</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Tree</span> <span class="n">t</span> <span class="ow">=</span> <span class="kt">Node</span> <span class="n">t</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="o">|</span> <span class="kt">Leaf</span> <span class="kr">deriving</span> <span class="p">(</span><span class="kt">Show</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">show</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">5</span> <span class="kt">Leaf</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">2</span> <span class="kt">Leaf</span> <span class="kt">Leaf</span><span class="p">))</span>
+<span class="go">&quot;(Node 5 Leaf (Node 2 Leaf Leaf))&quot;</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="operations-generiques">
+
+<h2>Opérations génériques</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Tree</span> <span class="n">t</span> <span class="ow">=</span> <span class="kt">Node</span> <span class="n">t</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="o">|</span> <span class="kt">Leaf</span>
+       <span class="kr">deriving</span> <span class="p">(</span><span class="kt">Show</span><span class="p">,</span> <span class="kt">Functor</span><span class="p">,</span> <span class="kt">Foldable</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="kr">let</span> <span class="n">t</span> <span class="ow">=</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">5</span> <span class="kt">Leaf</span> <span class="p">(</span><span class="kt">Node</span> <span class="mi">2</span> <span class="kt">Leaf</span> <span class="kt">Leaf</span><span class="p">))</span>
+<span class="gp">Prelude&gt;</span> <span class="n">show</span> <span class="n">t</span>
+<span class="go">&quot;Node 5 Leaf (Node 2 Leaf Leaf)&quot;</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">length</span> <span class="n">t</span>
+<span class="go">2</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="n">t</span>
+<span class="go">Node 10 Leaf (Node 4 Leaf Leaf)</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">foldl</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="mi">0</span> <span class="n">t</span>
+<span class="go">7</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="arbre-binaire-serialisation">
+
+<h2>Arbre binaire - Sérialisation</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Tree</span> <span class="n">t</span> <span class="ow">=</span> <span class="kt">Node</span> <span class="n">t</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="p">(</span><span class="kt">Tree</span> <span class="n">t</span><span class="p">)</span> <span class="o">|</span> <span class="kt">Leaf</span>
+       <span class="kr">deriving</span> <span class="p">(</span><span class="kt">Show</span><span class="p">,</span> <span class="kt">Serialize</span><span class="p">,</span> <span class="kt">Generic</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">show</span> <span class="n">t</span>
+<span class="go">&quot;Node 5 Leaf (Node 2 Leaf Leaf)&quot;</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">encode</span> <span class="n">t</span>
+<span class="go">&quot;\NUL\NUL\NUL\NUL\NUL\ENQ\SOH\NUL\NUL\NUL\NUL\NUL\STX\SOH\SOH&quot;</span>
+
+<span class="gp">Prelude&gt;</span> <span class="p">(</span><span class="n">decode</span> <span class="p">(</span><span class="n">encode</span> <span class="n">t</span><span class="p">))</span> <span class="ow">::</span> <span class="kt">Either</span> <span class="kt">String</span> <span class="p">(</span><span class="kt">Tree</span> <span class="kt">Integer</span><span class="p">)</span>
+<span class="go">Right (Node 5 Leaf (Node 2 Leaf Leaf))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>import Data.Serialize
+import GHC.Generics
+DeriveFunctor
+DeriveFoldable
+DeriveAnyClass
+DeriveGeneric</p>
+<p class="last">Le <cite>Either</cite> c'est un <cite>Maybe</cite> avec erreur.</p>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="effets-dans-le-systeme-de-types">
+
+<h2>Effets dans le système de types</h2>
+
+<p>Que peuvent faire les fonctions python, C++ et haskell suivantes ?</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">blork</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+     <span class="o">...</span>
+</pre></div>
+</div>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">float</span> <span class="nf">blork</span><span class="p">(</span><span class="kt">float</span> <span class="n">a</span><span class="p">,</span> <span class="kt">float</span> <span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">blork</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">blork</span> <span class="n">a</span> <span class="n">b</span> <span class="ow">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="types-separation-des-effets">
+
+<h2>Types : séparation des effets</h2>
+
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">blork</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="c1"># - n&#39;importe quoi sur a et b, qui sont de n&#39;importe quel type</span>
+    <span class="c1"># - Renvoie n&#39;importe quoi</span>
+    <span class="c1"># Des IOs (variables globales, réseau, fichiers, ...)</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">float</span> <span class="nf">blork</span><span class="p">(</span><span class="kt">float</span> <span class="n">a</span><span class="p">,</span> <span class="kt">float</span> <span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// - n&#39;importe quoi sur a et b, qui sont de type float</span>
+    <span class="c1">// - Renvoie un float</span>
+    <span class="c1">// Des IOs (variables globales, réseau, fichiers, ...)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">blork</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">blork</span> <span class="n">a</span> <span class="n">b</span> <span class="ow">=</span> <span class="o">...</span> <span class="c1">-- N&#39;importe quoi sur a et b, des Float</span>
+            <span class="o">...</span> <span class="c1">-- Renvoie un Float</span>
+            <span class="o">...</span> <span class="c1">-- Pas d&#39;IO !</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="id1">
+
+<h2>Types : séparation des effets</h2>
+
+<p>La présence d'effets de bords apparaît dans le type.</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">sayHello</span> <span class="n">who</span> <span class="ow">=</span> <span class="n">putStrLn</span> <span class="p">(</span><span class="s">&quot;Hello you &quot;</span> <span class="o">++</span> <span class="n">who</span><span class="p">)</span>
+
+<span class="nf">concat</span> <span class="n">a</span> <span class="n">b</span> <span class="ow">=</span> <span class="n">a</span> <span class="o">++</span> <span class="n">b</span>
+
+<span class="nf">computeAge</span> <span class="ow">=</span> <span class="kr">do</span>
+   <span class="n">putStrLn</span> <span class="s">&quot;Quelle est votre année de naissance ?&quot;</span>
+   <span class="n">annee</span> <span class="ow">&lt;-</span> <span class="n">getLine</span>
+   <span class="n">return</span> <span class="p">(</span><span class="mi">2016</span> <span class="o">-</span> <span class="n">read</span> <span class="n">annee</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="n">t</span> <span class="n">sayHello</span>
+<span class="go">sayHello :: String -&gt; IO ()</span>
+
+<span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="n">t</span> <span class="n">concat</span>
+<span class="go">concat :: [a] -&gt; [a] -&gt; [a]</span>
+
+<span class="gp">Prelude&gt;</span> <span class="kt">:</span><span class="n">t</span> <span class="n">computeAge</span>
+<span class="go">computeAge :: IO Int</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="purete-raisonement-simplifie">
+
+<h2>Pureté : raisonement simplifié</h2>
+
+<p>Les codes C++, python suivants sont-ils équivalents ?</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="c1">// version 1</span>
+<span class="kt">float</span> <span class="n">a</span> <span class="o">=</span> <span class="n">blork</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="kt">float</span> <span class="n">b</span> <span class="o">=</span> <span class="n">blork</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span>
+
+<span class="c1">// version 2</span>
+<span class="kt">float</span> <span class="n">a</span> <span class="o">=</span> <span class="n">blork</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">a</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># version 1</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+<span class="n">notUsedVariable</span> <span class="o">=</span> <span class="n">doSomething</span><span class="p">(</span><span class="n">otherVariable</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;world&quot;</span><span class="p">)</span>
+
+<span class="c1"># version 2</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;world&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="id2">
+
+<h2>Pureté : raisonement simplifié</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="c1">-- version 1</span>
+<span class="kr">let</span> <span class="n">a</span> <span class="ow">=</span> <span class="n">blork</span> <span class="mi">5</span> <span class="mi">2</span>
+    <span class="n">b</span> <span class="ow">=</span> <span class="n">blork</span> <span class="mi">5</span> <span class="mi">2</span>
+<span class="kr">in</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+
+<span class="c1">-- version 2</span>
+<span class="kr">let</span> <span class="n">a</span> <span class="ow">=</span> <span class="n">blork</span> <span class="mi">5</span> <span class="mi">2</span>
+<span class="kr">in</span> <span class="n">a</span> <span class="o">+</span> <span class="n">a</span>
+</pre></div>
+</div>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="c1">-- version 1</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+   <span class="n">putStrLn</span> <span class="s">&quot;hello&quot;</span>
+   <span class="kr">let</span> <span class="n">notUsedVariable</span> <span class="ow">=</span> <span class="n">doSomething</span> <span class="n">otherVariable</span>
+   <span class="n">putStrLn</span> <span class="s">&quot;world&quot;</span>
+
+<span class="c1">-- version 2</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+   <span class="n">putStrLn</span> <span class="s">&quot;hello&quot;</span>
+   <span class="n">putStrLn</span> <span class="s">&quot;world&quot;</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="modeliser-par-les-types-quickcheck">
+
+<h2>Modéliser par les types : Quickcheck</h2>
+
+<p>Generation automatique d'échantillons.</p>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">generate</span> <span class="p">(</span><span class="n">arbitrary</span> <span class="ow">::</span> <span class="kt">Gen</span> <span class="p">[</span><span class="kt">Float</span><span class="p">])</span>
+<span class="go">[-5.209145,-141.35745,8.049846,-40.25172,35.769672,18.124104,-27.154808,71.316666,-26.435165]</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">generate</span> <span class="p">(</span><span class="n">arbitrary</span> <span class="ow">::</span> <span class="kt">Gen</span> <span class="p">[(</span><span class="kt">Char</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)])</span>
+<span class="go">[(&#39;&amp;&#39;,0),(&#39;\153&#39;,26),(&#39;W&#39;,24),(&#39;3&#39;,1),(&#39;\ETX&#39;,7),(&#39;\CAN&#39;,-2),(&#39;v&#39;,22),(&#39;K&#39;,-14),(&#39;!&#39;,-26),(&#39;5&#39;,15),(&#39;\ENQ&#39;,26),(&#39;\SUB&#39;,-5),(&#39;%&#39;,-17),(&#39;\SOH&#39;,16),(&#39;8&#39;,6),(&#39;U&#39;,14),(&#39;\235&#39;,0),(&#39;\183&#39;,-18),(&#39;\196&#39;,7),(&#39;\a&#39;,-3),(&#39;K&#39;,17),(&#39;=&#39;,13),(&#39;o&#39;,2),(&#39;o&#39;,-26),(&#39;B&#39;,-25),(&#39;\166&#39;,-25),(&#39;\154&#39;,28),(&#39;Y&#39;,18),(&#39;\\&#39;,0),(&#39;\178&#39;,23)]</span>
+</pre></div>
+</div>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">import</span> <span class="nn">Test.QuickCheck</span>
+
+<span class="kr">data</span> <span class="kt">Shape</span> <span class="ow">=</span> <span class="kt">Rectangle</span> <span class="kt">Float</span> <span class="kt">Float</span> <span class="o">|</span> <span class="kt">Square</span> <span class="kt">Float</span> <span class="kr">deriving</span> <span class="p">(</span><span class="kt">Show</span><span class="p">)</span>
+
+<span class="kr">instance</span> <span class="kt">Arbitrary</span> <span class="kt">Shape</span> <span class="kr">where</span>
+    <span class="c1">-- (4 lignes)</span>
+</pre></div>
+</div>
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="n">generate</span> <span class="p">(</span><span class="n">arbitrary</span> <span class="ow">::</span> <span class="kt">Gen</span> <span class="p">[</span><span class="kt">Shape</span><span class="p">])</span>
+<span class="go">[Square 10.137317,Square 100.347984,Rectangle 9.437294 32.822086,Square 16.126654,Rectangle 21.215836 139.80946]</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="quickcheck-tests-automatiques">
+
+<h2>QuickCheck : Tests automatiques</h2>
+
+<div class="highlight-ghci"><div class="highlight"><pre><span></span><span class="gp">Prelude&gt;</span> <span class="kr">import</span> <span class="nn">Test.QuickCheck</span>
+<span class="gp">Prelude&gt;</span> <span class="kr">import</span> <span class="nn">Data.List</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">quickCheck</span> <span class="p">(</span><span class="nf">\</span><span class="n">x</span> <span class="ow">-&gt;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">+++ OK, passed 100 tests.</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">quickCheck</span> <span class="p">(</span><span class="nf">\</span><span class="n">l</span> <span class="ow">-&gt;</span> <span class="n">sort</span> <span class="n">l</span> <span class="o">==</span> <span class="n">sort</span> <span class="p">(</span><span class="n">sort</span> <span class="n">l</span><span class="p">))</span>
+<span class="go">+++ OK, passed 100 tests.</span>
+
+<span class="gp">Prelude&gt;</span> <span class="n">quickCheck</span> <span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="kt">NonEmpty</span> <span class="n">l</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="n">minimum</span> <span class="n">l</span> <span class="o">==</span> <span class="n">head</span> <span class="p">(</span><span class="n">sort</span> <span class="n">l</span><span class="p">))</span>
+<span class="go">+++ OK, passed 100 tests.</span>
+
+<span class="gp">Prelude&gt;</span> <span class="kr">let</span> <span class="n">brokenFact</span> <span class="n">n</span> <span class="ow">=</span> <span class="kr">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">12</span> <span class="kr">then</span> <span class="mi">1</span> <span class="kr">else</span> <span class="n">product</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="n">n</span><span class="p">]</span>
+<span class="gp">Prelude&gt;</span> <span class="n">quickCheck</span> <span class="p">(</span><span class="nf">\</span><span class="n">x</span> <span class="ow">-&gt;</span> <span class="n">brokenFact</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">brokenFact</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">*** Failed! Falsifiable (after 34 tests):</span>
+<span class="go">11</span>
+<span class="gp">Prelude&gt;</span> <span class="n">quickCheck</span> <span class="p">(</span><span class="nf">\</span><span class="n">x</span> <span class="ow">-&gt;</span> <span class="n">brokenFact</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">brokenFact</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">+++ OK, passed 100 tests.</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="modeliser-par-les-types-optparse-generic">
+
+<h2>Modéliser par les types : Optparse-Generic</h2>
+
+<ul class="simple">
+<li>Création d'une interface ligne de commande similaire à git proposant plusieurs options avec différents arguments.</li>
+</ul>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">GitOperation</span> <span class="ow">=</span>
+  <span class="kt">Checkout</span> <span class="p">{</span><span class="n">branch</span> <span class="ow">::</span> <span class="kt">String</span><span class="p">,</span> <span class="n">flag</span> <span class="ow">::</span> <span class="kt">Bool</span><span class="p">}</span>
+  <span class="o">|</span> <span class="kt">Commit</span> <span class="p">{</span><span class="n">message</span> <span class="ow">::</span> <span class="kt">Maybe</span> <span class="kt">String</span><span class="p">}</span>
+  <span class="o">|</span> <span class="kt">Move</span> <span class="p">{</span><span class="n">from</span> <span class="ow">::</span> <span class="kt">FilePath</span><span class="p">,</span> <span class="n">to</span> <span class="ow">::</span> <span class="kt">FilePath</span><span class="p">}</span>
+  <span class="kr">deriving</span> <span class="p">(</span><span class="kt">Generic</span><span class="p">,</span> <span class="kt">Show</span><span class="p">,</span> <span class="kt">ParseRecord</span><span class="p">)</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">op</span> <span class="ow">&lt;-</span> <span class="n">getRecord</span> <span class="s">&quot;This program is a simplified GIT interface&quot;</span>
+
+  <span class="n">print</span> <span class="p">(</span><span class="n">op</span> <span class="ow">::</span> <span class="kt">GitOperation</span><span class="p">)</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="optparse-generic">
+
+<h2>Optparse-Generic</h2>
+
+<div class="highlight-shell"><div class="highlight"><pre><span></span>$ ./OptParse move --from thisPath --to otherPath
+Move <span class="o">{</span><span class="nv">from</span> <span class="o">=</span> <span class="s2">&quot;thisPath&quot;</span>, <span class="nv">to</span> <span class="o">=</span> <span class="s2">&quot;otherPath&quot;</span><span class="o">}</span>
+$ ./OptParse commit
+Commit <span class="o">{</span><span class="nv">message</span> <span class="o">=</span> Nothing<span class="o">}</span>
+$ ./OptParse commit --message <span class="s2">&quot;Test&quot;</span>
+Commit <span class="o">{</span><span class="nv">message</span> <span class="o">=</span> Just <span class="s2">&quot;Test&quot;</span><span class="o">}</span>
+$ ./OptParse checkout --branch aBranch
+Checkout <span class="o">{</span><span class="nv">branch</span> <span class="o">=</span> <span class="s2">&quot;aBranch&quot;</span>, <span class="nv">flag</span> <span class="o">=</span> False<span class="o">}</span>
+$ ./OptParse checkout --branch aBranch --flag
+Checkout <span class="o">{</span><span class="nv">branch</span> <span class="o">=</span> <span class="s2">&quot;aBranch&quot;</span>, <span class="nv">flag</span> <span class="o">=</span> True<span class="o">}</span>
+
+$ ./OptParse checkout --help
+Usage: OptParse checkout --branch STRING <span class="o">[</span>--flag<span class="o">]</span>
+
+Available options:
+   -h,--help                Show this <span class="nb">help</span> text
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="conception-typage-fort">
+
+<h2>Conception typage fort</h2>
+
+<p>Problème, définir les structures pour un lancer de rayon :</p>
+<p class="graphviz">
+<img src="_images/graphviz-a35c15fca625cdec38488ca2e48277c3c92e5bad.png" alt="digraph G {
+     node [
+             shape = &quot;record&quot;
+     ]
+
+     Rayon [
+             label = &quot;{Rayon|+ origine\l+ direction}&quot;
+     ]
+
+     Sphere [
+             label = &quot;{Sphere|+ centre\l+ diamètre : Float\l+ couleur}&quot;
+     ]
+
+     Intersection [
+             label = &quot;{Intersection|+ point\l+ normale\l+ objet : Sphere}&quot;
+     ]
+}" />
+</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Rayon</span> <span class="ow">=</span> <span class="kt">Rayon</span> <span class="p">{</span><span class="n">origine</span> <span class="ow">::</span> <span class="o">?</span><span class="p">,</span> <span class="n">direction</span> <span class="ow">::</span> <span class="o">?</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Sphere</span> <span class="ow">=</span> <span class="kt">Sphere</span> <span class="p">{</span><span class="n">centre</span> <span class="ow">::</span> <span class="o">?</span><span class="p">,</span> <span class="n">diamètre</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span> <span class="n">couleur</span> <span class="ow">::</span> <span class="o">?</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Intersection</span> <span class="ow">=</span> <span class="kt">Intersection</span> <span class="p">{</span><span class="n">point</span> <span class="ow">::</span> <span class="o">?</span><span class="p">,</span> <span class="n">normale</span> <span class="ow">::</span> <span class="o">?</span><span class="p">,</span>
+                                  <span class="n">objet</span> <span class="ow">::</span> <span class="kt">Sphere</span><span class="p">}</span>
+
+<span class="nf">intersect</span> <span class="ow">::</span> <span class="kt">Rayon</span> <span class="ow">-&gt;</span> <span class="kt">Sphere</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="kt">Intersection</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="id3">
+
+<h2>Conception typage fort</h2>
+
+<p>Problème, définir les structures pour un lancer de rayon :</p>
+<p class="graphviz">
+<img src="_images/graphviz-b7e909e6b8c0de1f9039fc58ba32bafff4a76ace.png" alt="digraph G {
+     node [
+             shape = &quot;record&quot;
+     ]
+
+     Rayon [
+             label = &quot;{Rayon|+ origine : Vector\l+ direction : Vector}&quot;
+     ]
+
+     Sphere [
+             label = &quot;{Sphere|+ centre : Vector \l+ diamètre : Float\l+ couleur : Vector}&quot;
+     ]
+
+     Intersection [
+             label = &quot;{Intersection|+ point : Vector\l+ normale : Vector\l+ objet : Sphere}&quot;
+     ]
+
+     Vector [
+             label = &quot;{Vector|+ x : Float\l+ y : Float\l+ z : Float}&quot;
+     ]
+}" />
+</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Rayon</span> <span class="ow">=</span> <span class="kt">Rayon</span> <span class="p">{</span><span class="n">origine</span> <span class="ow">::</span> <span class="kt">Vector</span><span class="p">,</span> <span class="n">direction</span> <span class="ow">::</span> <span class="kt">Vector</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Sphere</span> <span class="ow">=</span> <span class="kt">Sphere</span> <span class="p">{</span><span class="n">centre</span> <span class="ow">::</span> <span class="kt">Vector</span><span class="p">,</span> <span class="n">diamètre</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span>
+                      <span class="n">couleur</span> <span class="kt">:</span> <span class="kt">Vector</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Intersection</span> <span class="ow">=</span> <span class="kt">Intersection</span> <span class="p">{</span><span class="n">point</span> <span class="ow">::</span> <span class="kt">Vector</span><span class="p">,</span> <span class="n">normale</span> <span class="ow">::</span> <span class="kt">Vector</span><span class="p">,</span>
+                                  <span class="n">objet</span> <span class="ow">::</span> <span class="kt">Sphere</span><span class="p">}</span>
+
+<span class="kr">data</span> <span class="kt">Vector</span> <span class="ow">=</span> <span class="kt">Vector</span> <span class="p">{</span><span class="n">x</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span> <span class="n">y</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span> <span class="n">z</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">}</span>
+
+<span class="nf">intersect</span> <span class="ow">::</span> <span class="kt">Rayon</span> <span class="ow">-&gt;</span> <span class="kt">Sphere</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="kt">Intersection</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="fonction-de-vector">
+
+<h2>Fonction de <cite>Vector</cite></h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="c1">-- Operations terme à terme</span>
+<span class="p">(</span><span class="o">^+^</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="p">(</span><span class="o">^-^</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="p">(</span><span class="o">^*^</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="p">(</span><span class="o">^/^</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="nf">negate</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+
+<span class="c1">-- Operations scalaires</span>
+<span class="p">(</span><span class="o">*^</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="p">(</span><span class="o">^*</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="p">(</span><span class="o">/^</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="p">(</span><span class="o">^/</span><span class="p">)</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+
+<span class="c1">-- Opération vectorielles</span>
+<span class="nf">dot</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">cross</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="nf">norm</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">normalize</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Vector</span>
+<span class="c1">-- Utilitaires</span>
+<span class="nf">isBlack</span> <span class="ow">::</span> <span class="kt">Vector</span> <span class="ow">-&gt;</span> <span class="kt">Bool</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="critique-de-la-modelisation">
+
+<h2>Critique de la modélisation</h2>
+
+<p class="graphviz">
+<img src="_images/graphviz-b7e909e6b8c0de1f9039fc58ba32bafff4a76ace.png" alt="digraph G {
+     node [
+             shape = &quot;record&quot;
+     ]
+
+     Rayon [
+             label = &quot;{Rayon|+ origine : Vector\l+ direction : Vector}&quot;
+     ]
+
+     Sphere [
+             label = &quot;{Sphere|+ centre : Vector \l+ diamètre : Float\l+ couleur : Vector}&quot;
+     ]
+
+     Intersection [
+             label = &quot;{Intersection|+ point : Vector\l+ normale : Vector\l+ objet : Sphere}&quot;
+     ]
+
+     Vector [
+             label = &quot;{Vector|+ x : Float\l+ y : Float\l+ z : Float}&quot;
+     ]
+}" />
+</p>
+<ul class="simple">
+<li>4 types bien clairs (<cite>Rayon</cite>, <cite>Sphere</cite>, <cite>Intersection</cite>, <cite>Vector</cite>)</li>
+<li>Réutilisation de code maximal (<cite>Vector</cite>)</li>
+<li>Heureux ?</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-2" id="id4">
+
+<h2>Critique de la modélisation</h2>
+
+<p class="graphviz">
+<img src="_images/graphviz-b7e909e6b8c0de1f9039fc58ba32bafff4a76ace.png" alt="digraph G {
+     node [
+             shape = &quot;record&quot;
+     ]
+
+     Rayon [
+             label = &quot;{Rayon|+ origine : Vector\l+ direction : Vector}&quot;
+     ]
+
+     Sphere [
+             label = &quot;{Sphere|+ centre : Vector \l+ diamètre : Float\l+ couleur : Vector}&quot;
+     ]
+
+     Intersection [
+             label = &quot;{Intersection|+ point : Vector\l+ normale : Vector\l+ objet : Sphere}&quot;
+     ]
+
+     Vector [
+             label = &quot;{Vector|+ x : Float\l+ y : Float\l+ z : Float}&quot;
+     ]
+}" />
+</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Bug possibles :</dt>
+<dd><ul class="first last simple">
+<li>confondre direction / origine du rayon / position de la sphere / couleur / ....</li>
+<li>Ajouter une direction à une couleur ?</li>
+<li>...</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-2" id="nouvelle-modelisation">
+
+<h2>Nouvelle modélisation</h2>
+
+<p class="graphviz">
+<img src="_images/graphviz-f7d5da627c15c54ac477633fce81e7565088fb87.png" alt="digraph G {
+     node [
+             shape = &quot;record&quot;
+     ]
+
+     Rayon [
+             label = &quot;{Rayon|+ origine : Point\l+ direction : Direction}&quot;
+     ]
+
+     Sphere [
+             label = &quot;{Sphere|+ centre : Point \l+ diamètre : Float\l+ couleur : Couleur}&quot;
+     ]
+
+     Intersection [
+             label = &quot;{Intersection|+ point : Point\l+ normale : Normal\l+ objet : Sphere}&quot;
+     ]
+
+     Vector [
+             label = &quot;{Vector|+ x : Float\l+ y : Float\l+ z : Float}&quot;
+     ]
+
+     Point {
+             label = &quot;{Point|+ : Vector}&quot;
+     }
+
+     Normal {
+             label = &quot;{Normal|+ : Vector}&quot;
+     }
+
+     Direction {
+             label = &quot;{Direction|+ : Vector}&quot;
+     }
+
+     Couleur {
+             label = &quot;{Couleur|+ : Vector}&quot;
+     }
+
+     Point -&gt; Vector
+     Normal -&gt; Vector
+     Direction -&gt; Vector
+     Couleur -&gt; Vector
+}" />
+</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Rayon</span> <span class="ow">=</span> <span class="kt">Rayon</span> <span class="p">{</span><span class="n">origine</span> <span class="ow">::</span> <span class="kt">Point</span><span class="p">,</span> <span class="n">direction</span> <span class="ow">::</span> <span class="kt">Direction</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Sphere</span> <span class="ow">=</span> <span class="kt">Sphere</span> <span class="p">{</span><span class="n">centre</span> <span class="ow">::</span> <span class="kt">Point</span><span class="p">,</span> <span class="n">diamètre</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span>
+                      <span class="n">couleur</span> <span class="kt">:</span> <span class="kt">Couleur</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Intersection</span> <span class="ow">=</span> <span class="kt">Intersection</span> <span class="p">{</span><span class="n">point</span> <span class="ow">::</span> <span class="kt">Point</span><span class="p">,</span> <span class="n">normale</span> <span class="ow">::</span> <span class="kt">Normal</span><span class="p">,</span>
+                                  <span class="n">objet</span> <span class="ow">::</span> <span class="kt">Sphere</span><span class="p">}</span>
+<span class="kr">data</span> <span class="kt">Vector</span> <span class="ow">=</span> <span class="kt">Vector</span> <span class="p">{</span><span class="n">x</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span> <span class="n">y</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">,</span> <span class="n">z</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">}</span>
+<span class="nf">intersect</span> <span class="ow">::</span> <span class="kt">Rayon</span> <span class="ow">-&gt;</span> <span class="kt">Sphere</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="kt">Intersection</span>
+
+<span class="kr">data</span> <span class="kt">Point</span> <span class="ow">=</span> <span class="kt">Point</span> <span class="kt">Vector</span>
+<span class="kr">data</span> <span class="kt">Normal</span> <span class="ow">=</span> <span class="kt">Normal</span> <span class="kt">Vector</span>
+<span class="kr">data</span> <span class="kt">Direction</span> <span class="ow">=</span> <span class="kt">Direction</span> <span class="kt">Vector</span>
+<span class="kr">data</span> <span class="kt">Couleur</span> <span class="ow">=</span> <span class="kt">Couleur</span> <span class="kt">Vector</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="nouvelle-fonctions">
+
+<h2>Nouvelle fonctions</h2>
+
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="c1">-- Point</span>
+<span class="nf">distance</span> <span class="ow">::</span> <span class="kt">Point</span> <span class="ow">-&gt;</span> <span class="kt">Point</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="c1">-- norm (a ^-^ b)</span>
+<span class="nf">directionFromTo</span> <span class="ow">::</span> <span class="kt">Point</span> <span class="ow">-&gt;</span> <span class="kt">Point</span> <span class="ow">-&gt;</span> <span class="kt">Direction</span> <span class="c1">-- (b ^-^ a)</span>
+<span class="nf">translateScaled</span> <span class="ow">::</span> <span class="kt">Point</span> <span class="ow">-&gt;</span> <span class="kt">Direction</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Point</span> <span class="c1">-- (a ^+^ (b ^* c))</span>
+
+<span class="c1">-- Direction</span>
+<span class="nf">negate</span> <span class="ow">::</span> <span class="kt">Direction</span> <span class="ow">-&gt;</span> <span class="kt">Direction</span>
+<span class="nf">dot</span> <span class="ow">::</span> <span class="kt">Direction</span> <span class="ow">-&gt;</span> <span class="kt">Direction</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">norm</span> <span class="ow">::</span> <span class="kt">Direction</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">normalize</span> <span class="ow">::</span> <span class="kt">Direction</span> <span class="ow">-&gt;</span> <span class="kt">Normal</span>
+
+<span class="c1">-- Normal</span>
+<span class="nf">negate</span> <span class="ow">::</span> <span class="kt">Normal</span> <span class="ow">-&gt;</span> <span class="kt">Normal</span>
+<span class="nf">dot</span> <span class="ow">::</span> <span class="kt">Normal</span> <span class="ow">-&gt;</span> <span class="kt">Normal</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>
+<span class="nf">cross</span> <span class="ow">::</span> <span class="kt">Normal</span> <span class="ow">-&gt;</span> <span class="kt">Normal</span> <span class="ow">-&gt;</span> <span class="kt">Direction</span>
+
+<span class="c1">-- Couleur</span>
+<span class="c1">-- ...</span>
+<span class="nf">isBlack</span> <span class="ow">::</span> <span class="kt">Couleur</span> <span class="ow">-&gt;</span> <span class="kt">Bool</span>
+</pre></div>
+</div>
+
+
+
+
+</article>
+<article class="slide level-3" id="bilan">
+
+<h3>Bilan</h3>
+
+<ul class="simple">
+<li>14 fonctions -&gt; 18</li>
+<li>Point (14 -&gt; 3)</li>
+<li>Direction (14 -&gt; 4)</li>
+<li>Normal (14 -&gt; 3)</li>
+<li>Couleur (14 -&gt; 8)</li>
+<li>Implémentation aisée. Exemple :</li>
+</ul>
+<div class="highlight-haskell"><div class="highlight"><pre><span></span><span class="nf">distance</span> <span class="p">(</span><span class="kt">Point</span> <span class="n">v0</span><span class="p">)</span> <span class="p">(</span><span class="kt">Point</span> <span class="n">v1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">norm</span> <span class="p">(</span><span class="n">v0</span> <span class="o">^-^</span> <span class="n">v1</span><span class="p">)</span>
+
+<span class="nf">directionFromTo</span> <span class="p">(</span><span class="kt">Point</span> <span class="n">from</span><span class="p">)</span> <span class="p">(</span><span class="kt">Point</span> <span class="n">to</span><span class="p">)</span> <span class="ow">=</span> <span class="kt">Direction</span> <span class="p">(</span><span class="n">to</span> <span class="o">^-^</span> <span class="n">from</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Grosse réduction du nombre de fonction par type</li>
+<li>Moins d'erreur possible</li>
+<li>Noms plus clairs dans de nombreux cas (translate versus +, directionFromTo versus -...)</li>
+</ul>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="evaluation-paresseuse">
+
+<h2>Évaluation paresseuse</h2>
+
+<p>Live dans le shell..</p>
+<div class="admonition note">
+<p class="first last admonition-title">Note</p>
+</div>
+
+
+
+
+</article>
+<article class="slide level-2" id="typage-de-quantites">
+
+<h2>Typage de quantités</h2>
+
+<p>&lt;<a class="reference external" href="https://hackage.haskell.org/package/units">https://hackage.haskell.org/package/units</a>&gt;</p>
+<p>&lt;<a class="reference external" href="https://hackage.haskell.org/package/dimensional">https://hackage.haskell.org/package/dimensional</a>&gt;</p>
+<ul class="simple">
+<li>Grandeurs physiques et unités typés pour ne pas mélanger les choux et les carottes</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-2" id="point-negatifs-d-haskell">
+
+<h2>Point négatifs d'Haskell</h2>
+
+<ul class="simple">
+<li>Documentation des librairies étonnante, mais typée</li>
+<li>Abus d'opérateurs.</li>
+<li>L'évaluation paresseuse<ul>
+<li>Performances</li>
+<li>Utilisation mémoire</li>
+<li>Ordre d'évaluation inconnu</li>
+</ul>
+</li>
+<li>Quelques surprises, comme les les IO lazy.</li>
+<li>Certains outils (le debugeur...)</li>
+<li>Portabilité limitée (intel 32/64 bits, arm..., javascript)</li>
+<li>Runtime</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-2" id="points-non-traites">
+
+<h2>Points Non traités</h2>
+
+<ul class="simple">
+<li>Concurrence</li>
+<li>Analyse statique (Liquid Haskell)</li>
+<li>Hoogle &lt;<a class="reference external" href="http://haskell.org/hoogle">http://haskell.org/hoogle</a>&gt;</li>
+<li>... Vos questions ? --&gt; Live Coding</li>
+</ul>
+
+
+
+
+</article>
+<article class="slide level-1" id="live-coding">
+
+<h1>Live Coding</h1>
+
+<p>Live coding du problème 7 d'aventOfCode &lt;<a class="reference external" href="http://adventofcode.com/day/7">http://adventofcode.com/day/7</a>&gt;</p>
+
+
+
+
+</article>
+
+</section>
+
+<section id="slide_notes">
+
+</section>
+
+  </body>
+</html>
